@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-import 
 import os
+import settings
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,8 +23,16 @@ async def processMessage(msg, u_msg):
         print (error)
 
 def runBot():
+    intent = discord.Intents.all()
+    bot = commands.Bot(command_prefix="/", intents=intent)
     discord_token = os.getenv("DISCORD_TOKEN")
     client = discord.Client(intents=discord.Intents.default())
+
+    @bot.event
+    async def on_ready():
+        print(bot.user)
+        print(bot.user.id)
+        print("_________________")
 
     @client.event
     async def on_ready():
@@ -36,6 +44,6 @@ def runBot():
             return 
         await processMessage(msg, 'hi')
 
-    client.run(discord_token)
+    bot.run(discord_token)
 
 
