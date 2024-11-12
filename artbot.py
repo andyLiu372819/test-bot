@@ -1,10 +1,11 @@
 import discord
 from discord.ext import commands
-import os
 import settings
 from dotenv import load_dotenv
+import random
+import classes
 
-load_dotenv()
+logger = settings.logging.getLogger("bot")
 
 
 def handle_user_input(msg):
@@ -25,25 +26,41 @@ async def processMessage(msg, u_msg):
 def runBot():
     intent = discord.Intents.all()
     bot = commands.Bot(command_prefix="/", intents=intent)
-    discord_token = os.getenv("DISCORD_TOKEN")
-    client = discord.Client(intents=discord.Intents.default())
+    discord_token = settings.DISCORD_TOKEN
 
     @bot.event
     async def on_ready():
-        print(bot.user)
-        print(bot.user.id)
-        print("_________________")
+        logger.info(f"User: {bot.user}, ID: {bot.user.id}")
 
-    @client.event
-    async def on_ready():
-        print((client.user), 'is live')
+    @bot.command(
+            aliases=["p"],
+            help="this is help",
+            description="this is discription",
+            brief="this is brief"
+    )
+    async def ping(ctx):
+        """Answers with pong"""
+        await ctx.send("pong")
+    
+    @bot.command()
+    async def say(ctx, *user_input):
+        if user_input:
+            await ctx.send(" ".join(user_input))
+        else:
+            await ctx.send("WHAT!")
+    
+    @bot.command()
+    async def dice(ctx, *options):
+        await ctx.send(random.choice(options))
 
-    @client.event
-    async def on_message(msg):
-        if msg.author == client.user:
-            return 
-        await processMessage(msg, 'hi')
+    @bot.command()
+    async def joined(ctx, who : discord.Member):
+        await ctx.send(who.joined_at)
 
-    bot.run(discord_token)
+    @bot.command()
+    async def slap(ctx, reason : classes.Slapper(use_nicknames=True)):
+        await ctx.send(reason)
+
+    bot.run(discord_token, root_logger=True)
 
 
